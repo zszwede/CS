@@ -26,8 +26,16 @@ public class LogEntryObject {
     private String host;
     @JsonRequired private String state;
     private String type;
+    private Long duration;
     public static TypeAdapter<LogEntryObject> gson = new GsonBuilder().registerTypeAdapter(LogEntryObject.class, new AnnotatedDeserializer<LogEntryObject>()).create().getAdapter(LogEntryObject.class);
 
+    public Long getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Long duration) {
+        this.duration = duration;
+    }
 
     public void setId(String id) {
         this.id = id;

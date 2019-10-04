@@ -14,7 +14,7 @@ public class MessageGenerator {
 
     @Test
     public void produce(){
-        produceMessages("app1.log", 100);
+        produceMessages("app.log", 1000000);
     }
 
 
@@ -40,7 +40,7 @@ public class MessageGenerator {
                     lo.setHost(hostname);
                 }
                 lines.add(gson.toJson(lo));
-                if(lines.size() % 1000 == 0) {
+                if(lines.size() % 100000 == 0) {
                     writeLines(lines, filename);
                     lines = new ArrayList<>();
                 }

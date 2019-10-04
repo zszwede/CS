@@ -1,6 +1,5 @@
 package com.zbychu.db;
 
-import com.zbychu.common.Config;
 import com.zbychu.common.Constants;
 import com.zbychu.common.LogEntryObject;
 import org.slf4j.Logger;
@@ -15,23 +14,19 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class Persister implements Runnable{
-    private final Logger logger = LoggerFactory.getLogger(Persister.class);
+public class CallablePersister {
+    private final Logger logger = LoggerFactory.getLogger(CallablePersister.class);
 
     private LinkedBlockingQueue<String> q;
     private AtomicBoolean endOfInput;
 
-    public Persister(LinkedBlockingQueue<String> q, AtomicBoolean endOfInput){
+    public CallablePersister(LinkedBlockingQueue<String> q, AtomicBoolean endOfInput){
         this.q = q;
         this.endOfInput = endOfInput;
     }
 
-    public Persister(LinkedBlockingQueue<String> q){
-        this(q, new AtomicBoolean(false));
-    }
 
-    @Override
-    public void run() {
+    public Boolean process() {
 
         LinkedList<LogEntryObject> logEntryObjects = new LinkedList<>();
         while (true){
@@ -45,7 +40,7 @@ public class Persister implements Runnable{
                     } else {
                         logger.warn("Received non-deserializable string : " + s);
                     }
-                    if (logEntryObjects.size() == 1000) {
+                    if (logEntryObjects.size() == 500) {
                         break;
                     }
                 }
@@ -53,16 +48,16 @@ public class Persister implements Runnable{
             while(!ConnectionPool.getInstance().isDbReady()){
                 try {
                     logger.error("Database connection not ready ...");
-                    TimeUnit.MILLISECONDS.sleep(10000);
+                    TimeUnit.MILLISECONDS.sleep(1000);
                 } catch (InterruptedException e) {
                     logger.error("Something went wrong ...");
                 }
             }
-            if(logEntryObjects.size() > 0) {
+            if(!logEntryObjects.isEmpty()) {
                 logger.debug(String.format("About to persist %d messages", logEntryObjects.size()));
                 persistMessages(logEntryObjects);
                 logEntryObjects.clear();
-            }else if(endOfInput.get() && q.size() == 0){
+            }else if(endOfInput.get() && q.isEmpty()){
                 logger.info("Received EOI signal ... exiting");
                 break;
             } else {
@@ -73,6 +68,7 @@ public class Persister implements Runnable{
                 }
             }
         }
+        return true;
     }
 
     public void persistMessages(List<LogEntryObject> logEntryObjectList){
@@ -90,11 +86,6 @@ public class Persister implements Runnable{
                     preparedStatement.addBatch();
                 } catch (SQLException e) {
                     logger.error("Error during populating prepared statement:", e);
-                }
-                if(i != 0 && i % Config.getInt(Constants.DB_BATCH_SIZE_PROP) == 0){
-                    logger.debug("Executing batch");
-                    preparedStatement.executeBatch();
-                    //conn.commit();
                 }
             }
             logger.debug("Executing batch");

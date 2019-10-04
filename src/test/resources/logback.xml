@@ -38,9 +38,25 @@
         </encoder>
     </appender>
 
+    <appender name="INFO_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>info.log</file>
+        <append>false</append>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>debug-%d{yyyy-MM-dd_HH}.log</fileNamePattern>
+            <maxHistory>360</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${pattern}</pattern>
+        </encoder>
+    </appender>
+
     <logger name="com.zbychu" level="DEBUG" additivity="false">
         <appender-ref ref="ERRORS_FILE"/>
         <appender-ref ref="DEBUG_FILE"/>
+        <appender-ref ref="INFO_FILE"/>
     </logger>
 
     <root level="INFO">

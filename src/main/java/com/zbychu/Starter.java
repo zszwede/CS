@@ -4,12 +4,14 @@ import com.zbychu.common.Config;
 import com.zbychu.common.Constants;
 import com.zbychu.db.ConnectionPool;
 import com.zbychu.db.DatabaseOperations;
-import com.zbychu.readers.stream.StreamLogReader;
+import com.zbychu.readers.combo.ComboReader;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 public class Starter {
     private static Logger logger;
@@ -39,11 +41,42 @@ public class Starter {
         boolean dbResult = dbo.setupObjects();
         ConnectionPool.getInstance().setDbReady(dbResult);
         addShutDownHook(dbo, cmdLine);
+        while(!ConnectionPool.getInstance().isDbReady()){
+            try {
+                TimeUnit.MILLISECONDS.sleep(100);
+            } catch (InterruptedException e) {
+                logger.error("Something went wrong ...");
+            }
+        }
         if(ConnectionPool.getInstance().isDbReady()) {
-            new StreamLogReader(
+            long s = new Date().getTime();
+            File log = new File(cmdLine.getOptionValue(Constants.FILE_SHORT_FLAG));
+            new ComboReader(log).process();
+/*
+            try {
+                IntSummaryStatistics stats = Files.lines(log.toPath()).limit(1000).map(String::length).collect(Collectors.summarizingInt(i -> i));
+                int avgLineLength = Double.valueOf(stats.getAverage()).intValue();
+                long estimatelLines = log.length() / avgLineLength;
+                long linesPerThread = estimatelLines / 30;
+                ExecutorService exec = Executors.newFixedThreadPool(30);
+                List<Boolean> t = ConcurrentSequence.sequence(
+                        LongStream.range(0, 32).boxed().map(p -> CompletableFuture.supplyAsync(
+                                () -> new StreamLogReader(
+                                        new File(cmdLine.getOptionValue(Constants.FILE_SHORT_FLAG)),
+                                        cmdLine.hasOption(Constants.TAIL_SHORT_FLAG)
+                                ).processLogFile(p * linesPerThread, Long.MAX_VALUE), exec))
+                                .collect(Collectors.toList())
+                ).join();
+                System.out.println("");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }*/
+ /*           new StreamLogReader(
                     new File(cmdLine.getOptionValue(Constants.FILE_SHORT_FLAG)),
                     cmdLine.hasOption(Constants.TAIL_SHORT_FLAG)
-            ).processLogFile(start);
+            ).processLogFile(start, Long.MAX_VALUE);*/
+            long e = new Date().getTime();
+            System.out.println("Time Taken ms : " + (e-s));
         }else{
             logger.error("Unable to proceed, Database not set correctly");
             System.exit(1);

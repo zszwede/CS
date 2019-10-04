@@ -2,6 +2,7 @@ package com.zbychu.readers.stream;
 
 import com.zbychu.common.Config;
 import com.zbychu.common.Constants;
+import com.zbychu.db.ConnectionPool;
 import com.zbychu.db.Persister;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,14 +31,15 @@ public class StreamLogReader {
     }
 
     public void processLogFile(){
-        processLogFile(0L);
+        processLogFile(0L, Long.MAX_VALUE);
     }
 
-    public void processLogFile(long start){
+    public boolean processLogFile(long start, long size){
         logger.info("Starting Stream Log processing ...");
         AtomicLong linesRead = new AtomicLong(start);
         int threads = Config.getInt(Constants.CONFIG_THREAD_MAX_PROP);
-        LinkedBlockingQueue<String> workerQueue = new LinkedBlockingQueue<>();
+        //LinkedBlockingQueue<String> workerQueue = new LinkedBlockingQueue<>();
+        LinkedBlockingQueue<String> workerQueue = ConnectionPool.getInstance().getQ();
         AtomicBoolean endOfInput = new AtomicBoolean(false);
         long readSize = 0;
         try {
@@ -45,7 +47,7 @@ public class StreamLogReader {
             for (int i = 0; i < threads; i++) {
                 Executors.newSingleThreadExecutor().execute(new Persister(workerQueue, endOfInput));
             }
-            Files.lines(logfile.toPath()).skip(linesRead.get()).forEach(s -> {
+            Files.lines(logfile.toPath()).parallel().skip(linesRead.get()).limit(1000L).forEach(s -> {
                 logger.debug("Processing line :" + s);
                 workerQueue.add(s);
                 logger.debug(String.format("Worker queue size: %d", workerQueue.size()));
@@ -65,9 +67,10 @@ public class StreamLogReader {
         logger.info("Marking EndOfInput ...");
         endOfInput.set(true);
         logger.info(String.format("Read total %d lines ...", linesRead.get()));
-        if(tail){
+        return true;
+/*        if(tail){
             TailLogReader tailer = new TailLogReader(logfile, Config.getLong(Constants.INTERVAL), linesRead);
             tailer.readMessages(readSize);
-        }
+        }*/
     }
 }

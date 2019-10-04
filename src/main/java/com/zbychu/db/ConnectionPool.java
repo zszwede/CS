@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ConnectionPool {
@@ -19,6 +20,7 @@ public class ConnectionPool {
     private AtomicBoolean poisonPill = new AtomicBoolean(false);
     private static ConnectionPool INSTANCE;
     private HikariDataSource ds;
+    private LinkedBlockingQueue<String> q = new LinkedBlockingQueue<>();
 
     private ConnectionPool() {
         this.ds = getDataSource();
@@ -67,9 +69,14 @@ public class ConnectionPool {
     public HikariDataSource getDataSource(){
         HikariConfig config = hikariConfig();
         HikariDataSource hds = new HikariDataSource(config);
+        hds.setMaximumPoolSize(200);
         Executors.newSingleThreadExecutor().execute(
                 new DatabaseHealthCheck((HealthCheckRegistry)config.getHealthCheckRegistry(), poisonPill)
         );
         return hds;
+    }
+
+    public LinkedBlockingQueue<String> getQ() {
+        return q;
     }
 }

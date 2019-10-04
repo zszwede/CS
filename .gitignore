@@ -1,3 +1,4 @@
 /.gradle/
 /.idea/
-
+/app.log
+/debug.log
