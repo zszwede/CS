@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 public class Starter {
@@ -23,18 +22,9 @@ public class Starter {
                         cmdLine.getOptionValue(Constants.CONFIG_SHORT_FLAG) :
                         Constants.CONFIG_FILE_DEFAULT
         );
-        long start = 0L;
         if(cmdLine.hasOption(Constants.TAIL_SHORT_FLAG) && cmdLine.hasOption(Constants.RESULTS_SHORT_FLAG)){
             System.err.println("Results wont be displayed when using TAIL flag");
             logger.warn("Results wont be displayed when using TAIL flag");
-        }
-        if(cmdLine.hasOption(Constants.START_SHORT_FLAG)){
-            try {
-                start = Long.parseLong(cmdLine.getOptionValue(Constants.START_SHORT_FLAG));
-            }catch (NumberFormatException e){
-                System.err.println("Incorrect line number provided");
-                System.exit(1);
-            }
         }
 
         DatabaseOperations dbo = new DatabaseOperations();
@@ -49,34 +39,8 @@ public class Starter {
             }
         }
         if(ConnectionPool.getInstance().isDbReady()) {
-            long s = new Date().getTime();
             File log = new File(cmdLine.getOptionValue(Constants.FILE_SHORT_FLAG));
             new ComboReader(log).process();
-/*
-            try {
-                IntSummaryStatistics stats = Files.lines(log.toPath()).limit(1000).map(String::length).collect(Collectors.summarizingInt(i -> i));
-                int avgLineLength = Double.valueOf(stats.getAverage()).intValue();
-                long estimatelLines = log.length() / avgLineLength;
-                long linesPerThread = estimatelLines / 30;
-                ExecutorService exec = Executors.newFixedThreadPool(30);
-                List<Boolean> t = ConcurrentSequence.sequence(
-                        LongStream.range(0, 32).boxed().map(p -> CompletableFuture.supplyAsync(
-                                () -> new StreamLogReader(
-                                        new File(cmdLine.getOptionValue(Constants.FILE_SHORT_FLAG)),
-                                        cmdLine.hasOption(Constants.TAIL_SHORT_FLAG)
-                                ).processLogFile(p * linesPerThread, Long.MAX_VALUE), exec))
-                                .collect(Collectors.toList())
-                ).join();
-                System.out.println("");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }*/
- /*           new StreamLogReader(
-                    new File(cmdLine.getOptionValue(Constants.FILE_SHORT_FLAG)),
-                    cmdLine.hasOption(Constants.TAIL_SHORT_FLAG)
-            ).processLogFile(start, Long.MAX_VALUE);*/
-            long e = new Date().getTime();
-            System.out.println("Time Taken ms : " + (e-s));
         }else{
             logger.error("Unable to proceed, Database not set correctly");
             System.exit(1);
@@ -144,29 +108,15 @@ public class Starter {
                 .longOpt(Constants.CONFIG_LONG_FLAG)
                 .build();
 
-        Option tailOption = Option.builder(Constants.TAIL_SHORT_FLAG)
-                .desc("Continue updating database with newly added lines")
-                .numberOfArgs(0)
-                .longOpt(Constants.TAIL_LONG_FLAG)
-                .build();
-
         Option resultOption = Option.builder(Constants.RESULTS_SHORT_FLAG)
                 .desc("Show results (>4ms) after completion")
                 .numberOfArgs(0)
                 .longOpt(Constants.RESULTS_LONG_FLAG)
                 .build();
-        Option startOption = Option.builder(Constants.START_SHORT_FLAG)
-                .desc("Start processing from N-th line of file")
-                .numberOfArgs(1)
-                .argName("line number")
-                .longOpt(Constants.START_LONG_FLAG)
-                .build();
 
         options.addOption(fileOption);
         options.addOption(configOption);
-        options.addOption(tailOption);
         options.addOption(resultOption);
-        options.addOption(startOption);
 
         CommandLineParser parser = new DefaultParser();
         try {

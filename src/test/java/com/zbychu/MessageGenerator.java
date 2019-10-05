@@ -14,7 +14,7 @@ public class MessageGenerator {
 
     @Test
     public void produce(){
-        produceMessages("app.log", 1000000);
+        produceMessages("app.log", 10000000);
     }
 
 

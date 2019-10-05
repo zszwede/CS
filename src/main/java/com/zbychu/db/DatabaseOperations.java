@@ -16,22 +16,10 @@ public class DatabaseOperations {
     public boolean setupObjects() {
         logger.info("Starting database setup");
         String[] actionList = new String[]{
-                Constants.DB_CREATE_RESULTS_TABLE,
-                Constants.DB_CREATE_TIMES_TABLE,
-                Constants.DB_CREATE_COMBINED_VIEW,
-                Constants.DB_DROP_TRIGGER,
-                Constants.DB_DROP_PROCEDURE,
-                Constants.DB_CREATE_PROCEDURE,
-                Constants.DB_CREATE_TRIGGER
+                Constants.DB_CREATE_RESULTS_TABLE
         };
         String[] checkList = new String[]{
-                Constants.DB_CHECK_RESULTS_TABLE,
-                Constants.DB_CHECK_TIMES_TABLE,
-                Constants.DB_CHECK_COMBINED_VIEW,
-                null,
-                null,
-                Constants.DB_CHECK_PROCEDURE,
-                Constants.DB_CHECK_TRIGGER
+                Constants.DB_CHECK_RESULTS_TABLE
         };
         try (Connection c = ConnectionPool.getInstance().getConnection()) {
             c.setAutoCommit(true);
