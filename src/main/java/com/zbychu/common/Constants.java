@@ -1,8 +1,6 @@
 package com.zbychu.common;
 
 public class Constants {
-    public final static String INTERVAL = "tail_sleep_interval";
-
     public final static String FILE_SHORT_FLAG = "f";
     public final static String FILE_LONG_FLAG = "file";
 
@@ -13,9 +11,11 @@ public class Constants {
     public final static String CONFIG_THREAD_MAX_PROP = "single_read_threads";
 
     public final static String DB_USER_PROP = "db_user";
+    public final static String DB_BATCH_SIZE_PROP = "db_batch_size";
     public final static String DB_PASS_PROP = "db_pass";
     public final static String DB_URL_PROP = "db_address";
     public final static String DB_HEALTHCHECK_INTERVAL_PROP = "db_healthcheck_interval_ms";
+    public final static String DB_POOL_SIZE_PROP = "db_pool_size";
 
     public final static String DB_PREPARED_STATEMENT = "INSERT INTO PUBLIC.RESULTS (ID, DURATION_MS, TYPE, HOST, ALERT) VALUES (?,?,?,?,?)";
 

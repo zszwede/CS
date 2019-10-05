@@ -69,7 +69,7 @@ public class ConnectionPool {
     public HikariDataSource getDataSource(){
         HikariConfig config = hikariConfig();
         HikariDataSource hds = new HikariDataSource(config);
-        hds.setMaximumPoolSize(200);
+        hds.setMaximumPoolSize(Config.getInt(Constants.DB_POOL_SIZE_PROP));
         Executors.newSingleThreadExecutor().execute(
                 new DatabaseHealthCheck((HealthCheckRegistry)config.getHealthCheckRegistry(), poisonPill)
         );

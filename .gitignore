@@ -2,3 +2,9 @@
 /.idea/
 /app.log
 /debug.log
+/cs.lck
+/cs.log
+/cs.properties
+/cs.script
+/error.log
+/build/

@@ -1,5 +1,7 @@
 package com.zbychu.db;
 
+import com.zbychu.common.Config;
+import com.zbychu.common.Constants;
 import com.zbychu.common.LogEntryObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,9 +21,9 @@ public class ClassicPersister {
     private final LinkedBlockingQueue<String> q;
     private final Logger logger = LoggerFactory.getLogger(ClassicPersister.class);
 
-    public ClassicPersister(ConcurrentHashMap<String,Long> states, LinkedBlockingQueue<String> q, AtomicBoolean endOfInput){
+    public ClassicPersister(ConcurrentHashMap<String,Long> states, AtomicBoolean endOfInput){
         this.states = states;
-        this.q = q;
+        this.q = ConnectionPool.getInstance().getQ();
         this.endOfInput = endOfInput;
     }
 
@@ -45,7 +47,7 @@ public class ClassicPersister {
                     } else {
                         logger.warn("Received non-deserializable string : " + s);
                     }
-                    if (logEntryObjects.size() == 500) {
+                    if (logEntryObjects.size() == Config.getInt(Constants.DB_BATCH_SIZE_PROP)) {
                         break;
                     }
                 }
@@ -78,12 +80,11 @@ public class ClassicPersister {
 
     private void persistMessages(LinkedList<LogEntryObject> logEntryObjects) {
         try(Connection conn = ConnectionPool.getInstance().getConnection()){
-            PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO PUBLIC.RESULTS (ID, DURATION_MS, TYPE, HOST, ALERT) VALUES (?,?,?,?,?)");
+            PreparedStatement preparedStatement = conn.prepareStatement(Constants.DB_PREPARED_STATEMENT);
             conn.setAutoCommit(true);
             for (int i = 0; i < logEntryObjects.size(); i++) {
                 LogEntryObject leo = logEntryObjects.get(i);
                 try {
-
                     preparedStatement.setString(1, leo.getId());
                     preparedStatement.setLong(2, leo.getDuration());
                     preparedStatement.setString(3, leo.getType());
