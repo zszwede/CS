@@ -46,3 +46,5 @@ Example: Read app.log using new_config.properties and display results on the end
 ```
 java -jar CS-1.0.jar -f app.log -c new_config.properties -r
 ```
+
+Large files may require overriding thread/pool values in config properties and JVM changing memory settings. 
