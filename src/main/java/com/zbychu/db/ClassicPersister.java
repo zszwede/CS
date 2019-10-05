@@ -31,7 +31,7 @@ public class ClassicPersister {
             while (!q.isEmpty()){
                 String s = q.poll();
                 if(s != null) {
-                    logger.debug("Picked up message from queue : " + s);
+                    //logger.debug("Picked up message from queue : " + s);
                     LogEntryObject logEntryObject = LogEntryObject.fromString(s);
                     if (logEntryObject != null) {
                         if(states.containsKey(logEntryObject.getId())){

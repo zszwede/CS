@@ -45,6 +45,9 @@ public class Starter {
             logger.error("Unable to proceed, Database not set correctly");
             System.exit(1);
         }
+        if (cmdLine.hasOption(Constants.RESULTS_SHORT_FLAG)){
+            dbo.showAlerts();
+        }
         System.exit(0);
     }
 
@@ -55,11 +58,7 @@ public class Starter {
 
     public void addShutDownHook(DatabaseOperations dbo, CommandLine cmdLine){
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            System.out.println("Shutdown Hook is running !");
             logger.info("Shutdown Hook is running !");
-            if (cmdLine.hasOption(Constants.RESULTS_SHORT_FLAG)){
-                dbo.showAlerts();
-            }
             closeDatabaseThreads();
         }));
     }
