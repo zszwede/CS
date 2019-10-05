@@ -29,10 +29,7 @@ public class Constants {
     public final static String DB_CHECK_RESULTS_TABLE = "SELECT * FROM PUBLIC.INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'RESULTS';";
     public final static String DB_ALERT_DISPLAY = "SELECT * FROM RESULTS WHERE ALERT = TRUE";
     public static final String TAIL_SHORT_FLAG = "t";
-    public static final String TAIL_LONG_FLAG = "tail";
 
     public static final String RESULTS_SHORT_FLAG = "r";
     public static final String RESULTS_LONG_FLAG = "results";
-    public static final String START_SHORT_FLAG = "s";
-    public static final String START_LONG_FLAG = "start";
 }
